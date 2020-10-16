@@ -61,7 +61,7 @@ void StmtNode::typeAnalysis(TypeAnalysis * ta){
 	TODO("Implement me in the subclass");
 }
 
-void AssignStmtNode::typeAnalysis(TypeAnalysis * ta){
+void AssignStmtNode::typeAnalysis(TypeAnalysis * ta){ // IS THIS COMPELTE?
 	myExp->typeAnalysis(ta);
 
 	//It can be a bit of a pain to write 
@@ -100,6 +100,8 @@ void AssignExpNode::typeAnalysis(TypeAnalysis * ta){
 	// it is usually ok to do the assignment. One
 	// exception is that if both types are function
 	// names, it should fail type analysis
+	
+	// WE NEED TO ACCOUNT FOR INCORRECT TYPES
 	if (tgtType == srcType){
 		ta->nodeType(this, tgtType);
 		return;
@@ -141,6 +143,32 @@ void IntLitNode::typeAnalysis(TypeAnalysis * ta){
 	// IntLits never fail their type analysis and always
 	// yield the type INT
 	ta->nodeType(this, BasicType::produce(INT));
+}
+
+// IN COMPLETE -- HOW DO REPRESENT A STRLITNODE
+// void StrLitNode::typeAnalysis(TypeAnalysis * ta){
+// 	// IntLits never fail their type analysis and always
+// 	// yield the type INT
+// 	ta->nodeType(this, BasicType::produce(INT));
+// }
+
+void CharLitNode::typeAnalysis(TypeAnalysis * ta){
+	// IntLits never fail their type analysis and always
+	// yield the type INT
+	ta->nodeType(this, BasicType::produce(CHAR));
+}
+
+void TrueNode::typeAnalysis(TypeAnalysis * ta){
+	ta->nodeType(this, BasicType::produce(BOOL));
+}
+
+void FalseNode::typeAnalysis(TypeAnalysis * ta){
+	ta->nodeType(this, BasicType::produce(BOOL));
+}
+
+void CallExpNode::typeAnalysis(TypeAnalysis * ta){
+	// INCOMPLETE
+	ta->nodeType(this, BasicType::produce(BOOL));
 }
 
 }
