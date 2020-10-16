@@ -77,7 +77,7 @@ void FnDeclNode::typeAnalysis(TypeAnalysis * ta){
 
 	// i feel like we need to do this similar to assignstmtnode
 	if ((idType->asError() || retType->asError()) || (idType != retType)){
-		ta->nodeType(this, ); //error case
+		ta->nodeType(this, ErrorType::produce());
 	} else {
 		ta->nodeType(this, BasicType::produce(VOID));
 	}
@@ -150,7 +150,7 @@ void AssignExpNode::typeAnalysis(TypeAnalysis * ta){
 	// names, it should fail type analysis
 	
 	// ACCOUNTING FOR INCORRECT TYPES
-	if (tgtType == srcType){
+	if (tgtType == srcType && tgtType != BasicType::produce(VOID) && srcType != BasicType::produce(VOID)){
 		ta->nodeType(this, tgtType);
 		return;
 	}
