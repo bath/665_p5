@@ -158,8 +158,8 @@ public:
 class DeclNode : public StmtNode{
 public:
 	DeclNode(size_t l, size_t c) : StmtNode(l, c){ }
-	void unparse(std::ostream& out, int indent) override =0;
-	virtual void typeAnalysis(TypeAnalysis *) override;
+	void unparse(std::ostream& out, int indent) override = 0;
+	virtual void typeAnalysis(TypeAnalysis *) override =0 ;
 };
 
 class VarDeclNode : public DeclNode{
@@ -272,6 +272,7 @@ public:
 	: StmtNode(l, c), myCond(condIn), myBody(bodyIn){ }
 	void unparse(std::ostream& out, int indent) override;
 	bool nameAnalysis(SymbolTable * symTab) override;
+	virtual void typeAnalysis(TypeAnalysis *ta) override;
 private:
 	ExpNode * myCond;
 	std::list<StmtNode *> * myBody;
@@ -299,6 +300,7 @@ public:
 	: StmtNode(l, c), myCond(condIn), myBody(bodyIn){ }
 	void unparse(std::ostream& out, int indent) override;
 	bool nameAnalysis(SymbolTable * symTab) override;
+	virtual void typeAnalysis(TypeAnalysis *ta) override;
 private:
 	ExpNode * myCond;
 	std::list<StmtNode *> * myBody;

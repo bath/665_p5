@@ -66,7 +66,11 @@ public:
 
 	//The following functions all report and error and 
 	// tell the object that the analysis has failed. 
-
+	void testErrorType(size_t line, size_t col){
+		hasError = true;
+		Report::fatal(line, col,
+		"Found an error here");
+	}
 	void badArgMatch(size_t line, size_t col){
 		hasError = true;
 		Report::fatal(line, col, 

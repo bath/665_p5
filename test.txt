@@ -1,4 +1,4 @@
 int main(){
   int a; 
-  a = true; # should raise error 
+  a = false;
 }

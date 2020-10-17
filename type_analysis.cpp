@@ -42,6 +42,7 @@ void ProgramNode::typeAnalysis(TypeAnalysis * ta){
 }
 
 void FnDeclNode::typeAnalysis(TypeAnalysis * ta){ 
+	std::cout<<"REMOVE ME: in fndecl node\n";
 	DataType * ret_type = this->getRetTypeNode()->getType();
 
 	std::list<const DataType*>* temp = new std::list<const DataType*>();
@@ -56,10 +57,18 @@ void FnDeclNode::typeAnalysis(TypeAnalysis * ta){
 
 	ta->setCurrentFnType(fn_type);
 	ta->nodeType(this,fn_type);
+
+	for (auto body : *myBody) {
+		body->typeAnalysis(ta);
+	}
+
+	std::cout<<"REMOVE ME: done with fndecl node\n";
 }
 
 void StmtNode::typeAnalysis(TypeAnalysis * ta){
-	TODO("Implement me in the subclass");
+	std::cout<<"REMOVE ME: in stmtnode\n";
+
+
 }
 
 void AssignStmtNode::typeAnalysis(TypeAnalysis * ta){ // IS THIS COMPELTE?
@@ -73,8 +82,9 @@ void AssignStmtNode::typeAnalysis(TypeAnalysis * ta){ // IS THIS COMPELTE?
 			// int a;
 			// int b;
 			// b = a = (5 + 4); ??
-
+	std::cout<<"REMOVE ME: Running TA on expression.\n";
 	myExp->typeAnalysis(ta);
+	std::cout<<"REMOVE ME: Finished TA on expression.\n";
 
 	//It can be a bit of a pain to write 
 	// "const DataType *" everywhere, so here
@@ -96,53 +106,35 @@ void ExpNode::typeAnalysis(TypeAnalysis * ta){
 	TODO("Override me in the subclass");
 }
 
-void AssignExpNode::typeAnalysis(TypeAnalysis * ta){ // I THINK THIS IS GOOD
-	//TODO: Note that this function is incomplete. 
-	// and needs additional code
-
-	//Do typeAnalysis on the subexpressions
+void AssignExpNode::typeAnalysis(TypeAnalysis * ta){
 	myDst->typeAnalysis(ta);
 	mySrc->typeAnalysis(ta);
 
 	const DataType * tgtType = ta->nodeType(myDst);
 	const DataType * srcType = ta->nodeType(mySrc);
 
-	//While incomplete, this gives you one case for 
-	// assignment: if the types are exactly the same
-	// it is usually ok to do the assignment. One
-	// exception is that if both types are function
-	// names, it should fail type analysis
-	
-	// ACCOUNTING FOR INCORRECT TYPES
 
-	if (((tgtType->asFn() != nullptr) && (srcType->asFn() != nullptr))) {
+	if (tgtType->asError() || srcType->asError()) {
+		ta->nodeType(this, ErrorType::produce());
+		return;
+	}
+	else if (tgtType->asFn()) { // the dst is a function
 		ta->badAssignOpd(myDst->line(), myDst->col());
-		ta->badAssignOpd(mySrc->line(), mySrc->col());
+		if(srcType->asFn()) {
+			ta->badAssignOpd(mySrc->line(), mySrc->col());
+		}
 		ta->nodeType(this, ErrorType::produce());
 		return;
 	}
-	
-	if (tgtType->asError()) {
+	else if (tgtType == srcType) {
+		ta->nodeType(this, tgtType);
+		return;
+	}
+	else { // bool = int
+		ta->badAssignOpr(mySrc->line(), mySrc->col());
 		ta->nodeType(this, ErrorType::produce());
 		return;
 	}
-	else if(tgtType == BasicType::produce(VOID)) {
-		ta->badAssignOpd(myDst->line(), myDst->col());
-		ta->nodeType(this, ErrorType::produce());
-	}
-
-	if (srcType->asError()) {		
-		ta->nodeType(this, ErrorType::produce());
-		return;
-	}
-	else if (srcType == BasicType::produce(VOID)) {
-		ta->badAssignOpd(mySrc->line(), mySrc->col());
-		ta->nodeType(this, ErrorType::produce());
-	}
-}
-
-void DeclNode::typeAnalysis(TypeAnalysis * ta){
-	TODO("Override me in the subclass");
 }
 
 void VarDeclNode::typeAnalysis(TypeAnalysis * ta){
@@ -378,5 +370,36 @@ void FromConsoleStmtNode::typeAnalysis(TypeAnalysis *ta){
 void CallStmtNode::typeAnalysis(TypeAnalysis *ta){
 	
 }
+
+void WhileStmtNode::typeAnalysis(TypeAnalysis *ta){
+	myCond->typeAnalysis(ta);
+	if (!ta->nodeType(myCond)->isBool())
+	{
+		ta->badWhileCond(myCond->line(), myCond->col());
+		ta->nodeType(this, ErrorType::produce());
+		return;
+	}
+	for (auto stmt : *myBody){
+		stmt->typeAnalysis(ta);
+	}
+	ta->nodeType(this, BasicType::produce(VOID));
+}
+
+void IfStmtNode::typeAnalysis(TypeAnalysis *ta){
+	myCond->typeAnalysis(ta);
+	if (!ta->nodeType(myCond)->isBool()){
+		ta->badIfCond(myCond->line(), myCond->col());
+		ta->nodeType(this, ErrorType::produce());
+		return;
+	}
+	for (auto stmt : *myBody){
+		stmt->typeAnalysis(ta);
+	}
+	ta->nodeType(this, BasicType::produce(VOID));	
+}
+
+
+
+
 
 }
