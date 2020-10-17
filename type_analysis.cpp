@@ -42,60 +42,20 @@ void ProgramNode::typeAnalysis(TypeAnalysis * ta){
 }
 
 void FnDeclNode::typeAnalysis(TypeAnalysis * ta){ 
-	// Need to check if returnstmt's type matches function's return value, AND need to check if all statements pass typeAnalysis
-	// yeah makes sense, then if those pass return as void
-	// also do we need to make sure formals pass as well?
+	DataType * ret_type = this->getRetTypeNode()->getType();
 
-	// PROCESS TO RETURN VOID
-	// 1. RETURNSTMTTYPE == FN TYPE ... if(myID type == myRetType) 
-	// 2. STMTNODE ALL PASS
-	// 3. FORMAL DECLS ALL PASS (?)
-	// 4. THEN WE RETURN VOID
-	// ELSE RETURN AS ERROR ??
-
-	//HINT: you might want to change the signature for
-	// typeAnalysis on FnBodyNode to take a second <- there is no FnBodyNode type.
-	// argument which is the type of the current 
-	// function. This will help you to know at a 
-	// return statement whether the return type matches
-	// the current function
-
-	//Note: this function may need extra code									// WE WILL NEED SETCURRENTFNTYPE SOMEWHERE
-
-	for (auto stmt : *myBody){
-		stmt->typeAnalysis(ta);
-	}
+	std::list<const DataType*>* temp = new std::list<const DataType*>();
 	for (auto decl : *myFormals){
-		decl->typeAnalysis(ta);
+		auto dt = decl->getTypeNode()->getType();
+		const DataType *dt_const = const_cast<DataType*>(dt);
+		temp->push_back(dt_const);
 	}
 
-	// make sure the type is OK for the function ID
-	myID->typeAnalysis(ta); 							// use this format to set the type / check
+    const std::list<const DataType*>* formals_list = const_cast<std::list<const DataType*>*>(temp);
+	FnType *fn_type = new FnType(formals_list, ret_type);
 
-	// myRetType->typeAnalysis(ta); // do we need to do this? --  i don't think so since it is a typenode
-		// type nodes will always be OK. in and of themselves
-
-	// add both the types to the hashmap
-	auto idType = ta->nodeType(myID); 					// use this format to get the type -- will it return an ERROR type?
-	auto retType = ta->nodeType(myRetType);
-
-	// i feel like we need to do this similar to assignstmtnode
-	if ((idType->asError() || retType->asError()) || (idType != retType)){ // i feel like we need to throw error if rettype != idtype
-		ta->nodeType(this, ErrorType::produce());
-	} else {
-		ta->nodeType(this, BasicType::produce(VOID));
-	}
-
-	// auto subType = ta->nodeType(myExp);
-
-	// // As error returns null if subType is NOT an error type
-	// // otherwise, it returns the subType itself
-	// if (subType->asError()){
-	// 	ta->nodeType(this, subType);
-	// } else {
-	// 	ta->nodeType(this, BasicType::produce(VOID));
-	// }
-
+	ta->setCurrentFnType(fn_type);
+	ta->nodeType(this,fn_type);
 }
 
 void StmtNode::typeAnalysis(TypeAnalysis * ta){
@@ -413,10 +373,6 @@ void FromConsoleStmtNode::typeAnalysis(TypeAnalysis *ta){
 	{
 		ta->nodeType(this, dstType);
 	}
-}
-
-void ReturnStmtNode::typeAnalysis(TypeAnalysis *ta){
-	
 }
 
 void CallStmtNode::typeAnalysis(TypeAnalysis *ta){
