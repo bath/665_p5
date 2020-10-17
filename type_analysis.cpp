@@ -60,8 +60,8 @@ void FnDeclNode::typeAnalysis(TypeAnalysis * ta){
 	// return statement whether the return type matches
 	// the current function
 
-	//Note: this function may need extra code
-	ReturnStmtNode * retStmt;
+	//Note: this function may need extra code									// WE WILL NEED SETCURRENTFNTYPE SOMEWHERE
+
 	for (auto stmt : *myBody){
 		stmt->typeAnalysis(ta);
 	}
@@ -69,28 +69,32 @@ void FnDeclNode::typeAnalysis(TypeAnalysis * ta){
 		decl->typeAnalysis(ta);
 	}
 
-	myID->typeAnalysis(ta); // do we need to do this?
-	//myRetType->typeAnalysis(ta); // do we need to do this?
+	// make sure the type is OK for the function ID
+	myID->typeAnalysis(ta); 							// use this format to set the type / check
 
-	auto idType = ta->nodeType(myID);
+	// myRetType->typeAnalysis(ta); // do we need to do this? --  i don't think so since it is a typenode
+		// type nodes will always be OK. in and of themselves
+
+	// add both the types to the hashmap
+	auto idType = ta->nodeType(myID); 					// use this format to get the type -- will it return an ERROR type?
 	auto retType = ta->nodeType(myRetType);
 
 	// i feel like we need to do this similar to assignstmtnode
-	if ((idType->asError() || retType->asError()) || (idType != retType)){
+	if ((idType->asError() || retType->asError()) || (idType != retType)){ // i feel like we need to throw error if rettype != idtype
 		ta->nodeType(this, ErrorType::produce());
 	} else {
 		ta->nodeType(this, BasicType::produce(VOID));
 	}
 
-	auto subType = ta->nodeType(myExp);
+	// auto subType = ta->nodeType(myExp);
 
-	// As error returns null if subType is NOT an error type
-	// otherwise, it returns the subType itself
-	if (subType->asError()){
-		ta->nodeType(this, subType);
-	} else {
-		ta->nodeType(this, BasicType::produce(VOID));
-	}
+	// // As error returns null if subType is NOT an error type
+	// // otherwise, it returns the subType itself
+	// if (subType->asError()){
+	// 	ta->nodeType(this, subType);
+	// } else {
+	// 	ta->nodeType(this, BasicType::produce(VOID));
+	// }
 
 }
 
@@ -132,7 +136,7 @@ void ExpNode::typeAnalysis(TypeAnalysis * ta){
 	TODO("Override me in the subclass");
 }
 
-void AssignExpNode::typeAnalysis(TypeAnalysis * ta){
+void AssignExpNode::typeAnalysis(TypeAnalysis * ta){ // I THINK THIS IS GOOD
 	//TODO: Note that this function is incomplete. 
 	// and needs additional code
 
@@ -150,26 +154,31 @@ void AssignExpNode::typeAnalysis(TypeAnalysis * ta){
 	// names, it should fail type analysis
 	
 	// ACCOUNTING FOR INCORRECT TYPES
-	if (tgtType == srcType && tgtType != BasicType::produce(VOID) && srcType != BasicType::produce(VOID)){
-		ta->nodeType(this, tgtType);
+
+	if (((tgtType->asFn() != nullptr) && (srcType->asFn() != nullptr))) {
+		ta->badAssignOpd(myDst->line(), myDst->col());
+		ta->badAssignOpd(mySrc->line(), mySrc->col());
+		ta->nodeType(this, ErrorType::produce());
 		return;
 	}
-	else {
-	ta->badAssignOpr(this->line(), this->col());
-	ta->nodeType(this, ErrorType::produce());	
+	
+	if (tgtType->asError()) {
+		ta->nodeType(this, ErrorType::produce());
+		return;
+	}
+	else if(tgtType == BasicType::produce(VOID)) {
+		ta->badAssignOpd(myDst->line(), myDst->col());
+		ta->nodeType(this, ErrorType::produce());
 	}
 
-	
-	//Some functions are already defined for you to
-	// report type errors. Note that these functions
-	// also tell the typeAnalysis object that the
-	// analysis has failed, meaning that main.cpp
-	// will print "Type check failed" at the end
-
-
-	//Note that reporting an error does not set the
-	// type of the current node, so setting the node
-	// type must be done
+	if (srcType->asError()) {		
+		ta->nodeType(this, ErrorType::produce());
+		return;
+	}
+	else if (srcType == BasicType::produce(VOID)) {
+		ta->badAssignOpd(mySrc->line(), mySrc->col());
+		ta->nodeType(this, ErrorType::produce());
+	}
 }
 
 void DeclNode::typeAnalysis(TypeAnalysis * ta){
@@ -222,8 +231,42 @@ void FalseNode::typeAnalysis(TypeAnalysis * ta){
 }
 
 void CallExpNode::typeAnalysis(TypeAnalysis * ta){
-	// INCOMPLETE
-	ta->nodeType(this, BasicType::produce(BOOL));
+	
+	
+	
+	// myID->typeAnalysis(ta);
+	
+	// auto ID = ta->nodeType(myID);
+
+	// // ensure ID is a function
+	// if(!ID->asFn()) {
+	// 	ta->badCallee(myID->line(), myID->col());
+	// 	ta->nodeType(this, ErrorType::produce());
+	// }
+
+	// for (auto args : *myArgs) {
+	// 	args->typeAnalysis(ta);
+	// 	auto arg = ta->nodeType(args);
+	// 	if(arg->asError()) {
+
+	// 	}
+	// }
+
+	// // ensure formals are OK
+	// if()
+
+	
+	
+	// // INCOMPLETE
+	// auto idType = ta->nodeType(myID);
+	// if (!idType->asFn())
+	// {
+	// 	ta->badCallee(myID->line(), myID->col());
+	// 	ta->nodeType(this, ErrorType::produce());
+	// }
+	// else if (myArgs->size() != idType->asFn().getFormalTypes().size())
+
+	// ta->nodeType(this, BasicType::produce(BOOL));
 }
 
 void NegNode::typeAnalysis(TypeAnalysis *ta){
@@ -290,7 +333,7 @@ void PostDecStmtNode::typeAnalysis(TypeAnalysis *ta){
 
 }
 
-void PlusNode::typeAnalysis(TypeAnalysis *ta){ // IS THIS CORRECT?
+void BinaryExpNode::typeAnalysis(TypeAnalysis *ta){ // IS THIS CORRECT?
 	
 	// void -- cant do this
 	// int 
@@ -304,20 +347,80 @@ void PlusNode::typeAnalysis(TypeAnalysis *ta){ // IS THIS CORRECT?
 		// THEN DO THE RIGHT ONE
 		// THEN RETURN TYPE INT?
 
+	// possible errors:
+		/*
+			1. either side is an error type, so we have a bad left or right operand
+			2. void < void, int < bool, char < int
+			3. NOTHING ELSE?
+				// specify the eror
+		*/
+
+
 	myExp1->typeAnalysis(ta);
 	myExp2->typeAnalysis(ta);
 
-	if((ta->nodeType(myExp1) == BasicType::produce(INT)) && (ta->nodeType(myExp2) == BasicType::produce(INT))) {
-		ta->nodeType(this, BasicType::produce(INT));
-	}
-	if(ta->nodeType(myExp1) != BasicType::produce(INT)) {
-		ta->badMathOpd(myExp1->line(), myExp1->col());
+	auto lType = ta->nodeType(myExp1); 
+	auto rType = ta->nodeType(myExp2);
+
+	if (lType->asError())
+	{
+		ta->badRelOpd(myExp1->line(), myExp1->col()); // yeah, ltype doesn't have a col and line. all the nodes in ast know where they are
 		ta->nodeType(this, ErrorType::produce());
 	}
-	if(ta->nodeType(myExp2) != BasicType::produce(INT)) {
-		ta->badMathOpd(myExp2->line(), myExp2->col());
+	else if (rType->asError())
+	{
+		ta->badRelOpd(myExp2->line(), myExp2->col());
 		ta->nodeType(this, ErrorType::produce());
 	}
+	else if (lType != rType)
+	{
+		ta->nodeType(this, ErrorType::produce());
+	}
+	else
+	{
+		ta->nodeType(this, lType);
+	}
+}
+
+void ToConsoleStmtNode::typeAnalysis(TypeAnalysis *ta){
+	mySrc->typeAnalysis(ta);
+	auto srcType = ta->nodeType(mySrc);
+	if (srcType->asFn())
+	{
+		ta->badToConsole(mySrc->line(), mySrc->col());
+		ta->nodeType(this, ErrorType::produce());
+	}
+	else if (srcType == BasicType::produce(VOID))
+	{
+		ta->badWriteVoid(mySrc->line(), mySrc->col());
+		ta->nodeType(this, ErrorType::produce());
+	}
+	else
+	{
+		ta->nodeType(this, srcType);
+	}
+}
+
+void FromConsoleStmtNode::typeAnalysis(TypeAnalysis *ta){
+	myDst->typeAnalysis(ta);
+	auto dstType = ta->nodeType(myDst);
+	if (dstType->asFn())
+	{
+		ta->badFromConsole(myDst->line(), myDst->col());
+		ta->nodeType(this, ErrorType::produce());
+	}
+	else
+	{
+		ta->nodeType(this, dstType);
+	}
+}
+
+void ReturnStmtNode::typeAnalysis(TypeAnalysis *ta){
+	
+}
+
+void CallStmtNode::typeAnalysis(TypeAnalysis *ta){
+	
 }
 
 }

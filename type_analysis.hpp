@@ -73,6 +73,16 @@ public:
 			"Type of actual does not match"
 			" type of formal");
 	}
+	void badToConsole(size_t line, size_t col){
+		hasError = true;
+		Report::fatal(line, col,
+			"Attempt to output a function");
+	}
+	void badFromConsole(size_t line, size_t col){
+		hasError = true;
+		Report::fatal(line, col,
+			"Attempt to read a function");
+	}
 	void badMathOpd(size_t line, size_t col){
 		hasError = true;
 		Report::fatal(line, col, 

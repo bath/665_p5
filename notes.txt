@@ -1,0 +1,23 @@
+Possible errors to account / check for:
+1. we use the ta->nodeType incorrectly and are calling / asking for a type instead of creating it
+    i. Identify where we are going to be adding a type to the hashmap and when were going to be
+       reading from it.
+2. setcurrentfntype and getcurrnentfntype -- where is that going to be used?
+
+
+NODES
+
+complete:
+
+
+maybe:
+BinaryExpNode
+FnDeclNode
+LitNodes(?)
+
+not started:
+All stmt nodes
+Vardecl
+
+
+not needed
