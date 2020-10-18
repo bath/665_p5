@@ -1,5 +1,1 @@
-
-bool b;
-bool my_func() {
-    b = 5;
-}
+5+5;
