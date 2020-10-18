@@ -552,5 +552,92 @@ void PlusNode::typeAnalysis(TypeAnalysis *ta) {
 	}
 }
 
+void MinusNode::typeAnalysis(TypeAnalysis *ta) {
+	myExp1->typeAnalysis(ta);
+	myExp2->typeAnalysis(ta);
+
+	auto lType = ta->nodeType(myExp1); 
+	auto rType = ta->nodeType(myExp2);
+
+	if(lType->isInt()) {
+		if(rType->isInt()) {
+			ta->nodeType(this, BasicType::produce(INT)); // int + int , return int
+			return;
+		}
+		else { // int + bool , return error
+			ta->badMathOpr(myExp2->line(), myExp2->col());
+			ta->nodeType(this, ErrorType::produce());
+			return;
+		}
+	}
+	else {  // bool + ?
+		ta->badMathOpr(myExp1->line(), myExp1->col());
+		ta->nodeType(this, ErrorType::produce());
+		if(!(rType->isInt())) { // bool + char , return error
+			ta->badMathOpr(myExp2->line(), myExp2->col());
+			return;
+		}
+		return; // bool + int , return error	
+	}
+}
+
+void DivideNode::typeAnalysis(TypeAnalysis *ta) {
+	myExp1->typeAnalysis(ta);
+	myExp2->typeAnalysis(ta);
+
+	auto lType = ta->nodeType(myExp1); 
+	auto rType = ta->nodeType(myExp2);
+
+	if(lType->isInt()) {
+		if(rType->isInt()) {
+			ta->nodeType(this, BasicType::produce(INT)); // int + int , return int
+			return;
+		}
+		else { // int + bool , return error
+			ta->badMathOpr(myExp2->line(), myExp2->col());
+			ta->nodeType(this, ErrorType::produce());
+			return;
+		}
+	}
+	else {  // bool + ?
+		ta->badMathOpr(myExp1->line(), myExp1->col());
+		ta->nodeType(this, ErrorType::produce());
+		if(!(rType->isInt())) { // bool + char , return error
+			ta->badMathOpr(myExp2->line(), myExp2->col());
+			return;
+		}
+		return; // bool + int , return error	
+	}
+}
+
+void TimesNode::typeAnalysis(TypeAnalysis *ta) {
+	myExp1->typeAnalysis(ta);
+	myExp2->typeAnalysis(ta);
+
+	auto lType = ta->nodeType(myExp1); 
+	auto rType = ta->nodeType(myExp2);
+
+	if(lType->isInt()) {
+		if(rType->isInt()) {
+			ta->nodeType(this, BasicType::produce(INT)); // int + int , return int
+			return;
+		}
+		else { // int + bool , return error
+			ta->badMathOpr(myExp2->line(), myExp2->col());
+			ta->nodeType(this, ErrorType::produce());
+			return;
+		}
+	}
+	else {  // bool + ?
+		ta->badMathOpr(myExp1->line(), myExp1->col());
+		ta->nodeType(this, ErrorType::produce());
+		if(!(rType->isInt())) { // bool + char , return error
+			ta->badMathOpr(myExp2->line(), myExp2->col());
+			return;
+		}
+		return; // bool + int , return error	
+	}
+}
+
 
 } // end big thing
