@@ -403,6 +403,7 @@ public:
 		ExpNode * exp1, ExpNode * exp2)
 	: BinaryExpNode(lineIn, colIn, exp1, exp2){ }
 	void unparse(std::ostream& out, int indent) override;
+	virtual void typeAnalysis(TypeAnalysis *) override;
 };
 
 class LessEqNode : public BinaryExpNode{
@@ -410,6 +411,7 @@ public:
 	LessEqNode(size_t l, size_t c, ExpNode * e1, ExpNode * e2)
 	: BinaryExpNode(l, c, e1, e2){ }
 	void unparse(std::ostream& out, int indent) override;
+	virtual void typeAnalysis(TypeAnalysis *) override;
 };
 
 class GreaterNode : public BinaryExpNode{
@@ -418,6 +420,7 @@ public:
 		ExpNode * exp1, ExpNode * exp2)
 	: BinaryExpNode(lineIn, colIn, exp1, exp2){ }
 	void unparse(std::ostream& out, int indent) override;
+	virtual void typeAnalysis(TypeAnalysis *) override;
 };
 
 class GreaterEqNode : public BinaryExpNode{
@@ -425,6 +428,7 @@ public:
 	GreaterEqNode(size_t l, size_t c, ExpNode * e1, ExpNode * e2)
 	: BinaryExpNode(l, c, e1, e2){ }
 	void unparse(std::ostream& out, int indent) override;
+	virtual void typeAnalysis(TypeAnalysis *) override;
 };
 
 class UnaryExpNode : public ExpNode {
