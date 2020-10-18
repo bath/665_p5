@@ -1,9 +1,5 @@
-int main(){
-    int a;
-    bool b;
-    a = b;
-}
+
 bool b;
 bool my_func() {
-    b = main(); # should throw error
+    b = 5;
 }

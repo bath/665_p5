@@ -159,7 +159,6 @@ class DeclNode : public StmtNode{
 public:
 	DeclNode(size_t l, size_t c) : StmtNode(l, c){ }
 	void unparse(std::ostream& out, int indent) override = 0;
-	virtual void typeAnalysis(TypeAnalysis *) override =0 ;
 };
 
 class VarDeclNode : public DeclNode{
@@ -346,6 +345,7 @@ public:
 	PlusNode(size_t l, size_t c, ExpNode * e1, ExpNode * e2)
 	: BinaryExpNode(l, c, e1, e2){ }
 	void unparse(std::ostream& out, int indent) override;
+	virtual void typeAnalysis(TypeAnalysis *)override;
 };
 
 class MinusNode : public BinaryExpNode{
@@ -353,6 +353,7 @@ public:
 	MinusNode(size_t l, size_t c, ExpNode * e1, ExpNode * e2)
 	: BinaryExpNode(l, c, e1, e2){ }
 	void unparse(std::ostream& out, int indent) override;
+	virtual void typeAnalysis(TypeAnalysis *)override;
 };
 
 class TimesNode : public BinaryExpNode{

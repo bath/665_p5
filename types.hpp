@@ -42,6 +42,7 @@ public:
 	virtual bool isVoid() const { return false; }
 	virtual bool isInt() const { return false; }
 	virtual bool isBool() const { return false; }
+	virtual bool isChar() const { return false; }
 	virtual bool isPtr() const { return false; }
 	virtual bool validVarType() const = 0 ;
 protected:
@@ -133,6 +134,9 @@ public:
 	}
 	virtual bool isVoid() const override { 
 		return myBaseType == BaseType::VOID; 
+	}
+	virtual bool isChar() const override {
+		return myBaseType == BaseType::CHAR;
 	}
 	virtual bool validVarType() const override {
 		return !isVoid();
